@@ -1,7 +1,9 @@
 //UserController
 package likelion.practice.controller;
 
+import likelion.practice.dto.PostDTO;
 import likelion.practice.dto.UserDTO;
+import likelion.practice.entity.Post;
 import likelion.practice.entity.User;
 import likelion.practice.security.JwtTokenProvider;
 import likelion.practice.service.UserService;
@@ -14,8 +16,8 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/users")
@@ -72,5 +74,48 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    
+
+    @GetMapping("/user-info")
+    public ResponseEntity<List<UserDTO>> searchPosts(@RequestParam String id) {
+        Optional<User> userOptional = userService.searchUsers(id);
+
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.emptyList());
+        }
+
+        User user = userOptional.get(); // Optional에서 User 객체 추출
+
+        // 엔티티를 DTO로 변환
+        UserDTO userDTO = new UserDTO();
+        userDTO.setUserId(user.getUserId());
+        userDTO.setName(user.getName());
+        userDTO.setProfileImage(user.getProfileImage());
+
+        // 리스트 형태로 반환
+        return ResponseEntity.ok(Collections.singletonList(userDTO));
+    }
+
+    @PatchMapping("/alter-id")
+    public ResponseEntity<UserDTO> updateUser(@RequestParam String id, @RequestParam String newId) {
+        Optional<User> userOptional = userService.searchUsers(id);
+
+        // 사용자 존재 여부 확인
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        User user = userOptional.get(); // Optional에서 User 객체 가져오기
+        user.setUserId(newId); // 기존 id를 newId로 변경
+
+        // 변경된 사용자 정보 저장
+        User updatedUser = userService.saveUser(user);
+
+        // 업데이트된 엔티티를 DTO로 변환
+        UserDTO userDTO = new UserDTO();
+        userDTO.setUserId(updatedUser.getUserId());
+        userDTO.setName(updatedUser.getName());
+        userDTO.setProfileImage(updatedUser.getProfileImage());
+
+        return ResponseEntity.ok(userDTO);
+    }
 }

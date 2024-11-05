@@ -2,6 +2,7 @@
 package likelion.practice.service;
 
 import likelion.practice.dto.UserDTO;
+import likelion.practice.entity.Post;
 import likelion.practice.entity.User;
 import likelion.practice.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +16,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -70,4 +73,14 @@ public class UserService implements UserDetailsService {
     public boolean existsByUserId(String userId) {
         return userRepository.existsByUserId(userId);
     }
+
+    // 사람 찾기
+    public Optional<User> searchUsers(String id) {
+        return userRepository.findByUserId(id);
+    }
+
+    public User saveUser(User user) {
+        return userRepository.save(user); // UserRepository의 save 메서드를 호출하여 사용자 정보 저장
+    }
+
 }

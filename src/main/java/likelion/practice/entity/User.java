@@ -27,5 +27,26 @@ public class User {
 
     @Column(name = "profile_image", length = 1000)
     private String profileImage;  // 프로필 사진
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public String getName(){
+        return name;
+    }
+
+    public void setName(String name){
+        this.name = name;
+    }
+
+    public String getProfileImage() {
+        return profileImage;
+    }
+
 }
 
