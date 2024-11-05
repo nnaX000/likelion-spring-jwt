@@ -65,4 +65,9 @@ public class UserService implements UserDetailsService {
 
         return user;
     }
+
+    // 아이디 중복 조회
+    public boolean existsByUserId(String userId) {
+        return userRepository.existsByUserId(userId);
+    }
 }

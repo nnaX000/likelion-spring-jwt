@@ -3,26 +3,27 @@ package likelion.practice.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.Base64;
+import javax.crypto.SecretKey;
 import java.util.Date;
 
 @Component
 public class JwtTokenProvider {
 
-    @Value("${jwt.secret}")
-    private String secretKey;
+    private SecretKey secretKey;
 
     @Value("${jwt.expiration}")
     private long validityInMilliseconds;
 
+    // secretKey 초기화
     @PostConstruct
     protected void init() {
-        this.secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
+        this.secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256); // 256비트 이상의 강력한 키 생성
     }
 
     // JWT 토큰 생성
@@ -35,14 +36,15 @@ public class JwtTokenProvider {
                 .setClaims(claims)
                 .setIssuedAt(now)
                 .setExpiration(validity)
-                .signWith(SignatureAlgorithm.HS256, secretKey)
+                .signWith(secretKey, SignatureAlgorithm.HS256) // 강력한 키로 서명
                 .compact();
     }
 
     // JWT 토큰에서 사용자 ID 추출
     public String getUserId(String token) {
-        return Jwts.parser()
+        return Jwts.parserBuilder()
                 .setSigningKey(secretKey)
+                .build()
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
@@ -60,7 +62,7 @@ public class JwtTokenProvider {
     // JWT 토큰 유효성 검증
     public boolean validateToken(String token) {
         try {
-            Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
+            Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token);
             return true;
         } catch (Exception e) {
             return false;
